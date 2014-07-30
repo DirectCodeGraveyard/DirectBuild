@@ -1,0 +1,16 @@
+def grtCtx = context(scope: scriptScope(), filetypes: [ "grt" ])
+
+contributor(grtCtx) {
+    method(name: "component", params: [
+            name: String
+    ])
+    method(name: "component", params: [
+            name: String,
+            options: Map
+    ])
+    method(name: "html", params: [
+        closure: Closure
+    ])
+    property(name: "request", type: "org.vertx.groovy.core.http.HttpServerRequest")
+    property(name: "ci", type: "org.directcode.ci.core.CI")
+}

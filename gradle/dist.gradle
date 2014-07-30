@@ -1,0 +1,15 @@
+distributions {
+    main {
+        baseName = 'DirectBuild'
+        contents {
+            from("${buildDir}/libs/DirectBuild.jar") {
+                into("lib")
+            }
+        }
+    }
+}
+
+tasks.getByName("distZip").dependsOn("jar")
+tasks.getByName("distTar").dependsOn("jar")
+
+task dist(dependsOn: [ "distZip", "distTar" ]) {}

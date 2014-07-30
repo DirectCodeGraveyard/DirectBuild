@@ -1,0 +1,116 @@
+apply plugin: 'groovy'
+apply plugin: 'build-dashboard'
+apply plugin: 'codenarc'
+apply plugin: 'maven'
+apply plugin: 'distribution'
+apply plugin: 'idea'
+apply plugin: 'versions'
+
+version = "0.9.1"
+
+buildscript {
+    repositories {
+        maven { url "https://raw.githubusercontent.com/ben-manes/gradle-versions-plugin/mvnrepo" }
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.5-beta-1'
+    }
+}
+
+defaultTasks 'jar'
+
+group = "com.directmyfile"
+
+ext {
+    groovyVersion = '2.3.1:indy'
+}
+
+repositories {
+    jcenter()
+
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
+}
+
+dependencies {
+    compile("org.codehaus.groovy:groovy-all:${groovyVersion}")
+    compile 'org.codehaus.gpars:gpars:1.2.0'
+    compile('io.vertx:vertx-core:2.1RC3') {
+        exclude group: "com.hazelcast", module: "hazelcast"
+    }
+    compile 'io.vertx:lang-groovy:2.1.0-final'
+    compile 'org.jetbrains:annotations:13.0'
+
+    compile files("gradle/Gutter.jar")
+
+    testCompile "junit:junit:4.11"
+
+    codenarc 'org.codenarc:CodeNarc:0.20'
+}
+
+compileGroovy {
+    groovyOptions.optimizationOptions.indy = true
+}
+
+tasks.withType(CodeNarc) {
+    ignoreFailures = true
+    configFile = file("gradle/CodeNarc.groovy")
+    reports {
+        html.enabled = true
+        xml.enabled = true
+    }
+}
+
+// Compile Java code with the Groovy compiler
+sourceSets.main.java.srcDirs = []
+sourceSets.main.groovy.srcDirs += ["src/main/java"]
+
+sourceCompatibility = 8
+targetCompatibility = 8
+
+jar {
+    archiveName = "DirectBuild.jar"
+    manifest {
+        attributes('Main-class': 'org.directcode.ci.core.Main')
+    }
+
+    // Pack Dependencies
+    from configurations.compile.findAll {
+        it.name != "groovy-all-${groovyVersion - ":indy"}.jar"
+    }.collect {
+        it.directory ? it : zipTree(it)
+    }
+
+    // Makes Jar Clean
+    exclude "overviewj.html"
+    exclude "overview.html"
+    exclude "LICENSE.txt"
+
+    // Fix Duplicate Zip Entry
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+task sourcesJar(type: Jar) {
+    description = "Creates a Jar with the DirectBuild Source Code"
+    archiveName = "DirectBuild-sources.jar"
+    from sourceSets.main.allSource
+}
+
+apply from: "gradle/wrapper.gradle"
+
+test {
+    maxParallelForks = 1
+    forkEvery = 0
+
+    testLogging {
+        showExceptions = true
+        showStandardStreams = true
+        exceptionFormat "short"
+    }
+}
+
+apply from: 'gradle/dist.gradle'
+apply from: 'gradle/releaseInfo.gradle'

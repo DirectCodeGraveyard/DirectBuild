@@ -1,0 +1,18 @@
+import java.time.LocalDateTime
+
+String gitCommitSHA() {
+    try {
+        return "git log -1 --format=%H".execute(["PATH=${System.getenv("PATH")}"], rootProject.projectDir).text - "\n"
+    } catch (ignored) {
+        return "Unknown"
+    }
+}
+
+processResources {
+    doLast {
+        def file = file("$buildDir/resources/main/release.json")
+        file.text = file.text.
+                replace('${GIT_COMMIT_SHA}', gitCommitSHA()).
+                replace('${BUILD_DATE}', LocalDateTime.now().toString())
+    }
+}

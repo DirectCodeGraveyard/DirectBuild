@@ -1,0 +1,25 @@
+def jobScriptCtx = context(scope: scriptScope(), filetypes: [ "dbj" ])
+def tasksCtx = context(scope: closureScope(isArg: true))
+
+contributor([jobScriptCtx]) {
+    method name: "name", type: "void", doc: "Sets the Job Name", params: [
+            name: String
+    ]
+    method name: "tasks", type: "void", doc: "Adds the Tasks Specified", params: [
+            closure: Closure
+    ]
+    method name: "source", type: "void", doc: "Configures the Sources", params: [
+            opts: Map
+    ]
+    method name: "artifact", type: "void", doc: "Adds an Artifact", params: [
+            path: String
+    ]
+    method name: "conditions", type: "void", doc: "Adds a Build Condition", params: [
+            closure: Closure
+    ]
+
+}
+
+contributor([tasksCtx]) {
+
+}

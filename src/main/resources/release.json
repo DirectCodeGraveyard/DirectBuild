@@ -1,0 +1,4 @@
+{
+    "GIT_COMMIT_SHA": "${GIT_COMMIT_SHA}",
+    "buildDate": "${BUILD_DATE}"
+}
